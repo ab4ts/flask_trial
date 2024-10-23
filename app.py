@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_from_directory
 import os
 
 app = Flask(__name__)
@@ -28,9 +28,15 @@ def upload_image():
         file_path = os.path.join('uploads', file.filename)
         file.save(file_path)
 
-        return jsonify({'message': 'File uploaded successfully', 'file_path': file_path}), 200
+        # Return a URL to access the uploaded file
+        return jsonify({'message': 'File uploaded successfully', 'file_url': f"/uploads/{file.filename}"}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Route to serve uploaded files
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory('uploads', filename)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
