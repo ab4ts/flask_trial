@@ -3,11 +3,15 @@ import os
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+# Set the upload folder to the mounted volume path
+UPLOAD_FOLDER = '/workspaces/flask_trial/uploads'
 
-# Ensure the 'uploads' directory exists
+# Ensure the 'uploads' directory exists in the persistent storage path
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+# Configure Flask to use the upload folder
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Route to render the home page with an image upload form
 @app.route('/')
@@ -27,7 +31,7 @@ def upload_image():
             return jsonify({'error': 'No selected file'}), 400
 
         # Save the uploaded file in the 'uploads' folder
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
 
         # Return a response with a file URL
@@ -38,8 +42,8 @@ def upload_image():
 # Route to serve uploaded files
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
