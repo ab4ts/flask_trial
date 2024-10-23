@@ -1,16 +1,20 @@
-from flask import Flask, request, jsonify
-import cv2
-import numpy as np
-import yolov11  # Assuming you have a YOLOv11 library or implementation installed
+from flask import Flask, request, render_template, jsonify
 import os
 
 app = Flask(__name__)
 
-# Load YOLOv11 model
-model = yolov11.load_model("path/to/yolov11_weights.pth")
+# Ensure the 'uploads' directory exists
+if not os.path.exists('uploads'):
+    os.makedirs('uploads')
 
-@app.route('/test-railway', methods=['POST'])
-def test_railway():
+# Route to render the home page with an image upload form
+@app.route('/')
+def home():
+    return render_template('upload.html')
+
+# Route to handle image upload
+@app.route('/upload', methods=['POST'])
+def upload_image():
     try:
         # Ensure a file is uploaded
         if 'file' not in request.files:
@@ -20,24 +24,11 @@ def test_railway():
         if file.filename == '':
             return jsonify({'error': 'No selected file'}), 400
 
-        # Read image from the uploaded file
-        npimg = np.frombuffer(file.read(), np.uint8)
-        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+        # Save the uploaded file
+        file_path = os.path.join('uploads', file.filename)
+        file.save(file_path)
 
-        # Run YOLOv11 inference on the image
-        results = model.detect(image)
-
-        # Process detection results
-        detected_objects = []
-        for result in results:
-            x, y, w, h, confidence, class_id = result
-            detected_objects.append({
-                'class_id': class_id,
-                'confidence': confidence,
-                'bounding_box': [x, y, w, h]
-            })
-
-        return jsonify({'detections': detected_objects}), 200
+        return jsonify({'message': 'File uploaded successfully', 'file_path': file_path}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
