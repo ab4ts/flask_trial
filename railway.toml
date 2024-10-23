@@ -1,0 +1,4 @@
+[services]
+  [[volumes]]
+    name = "my-volume"
+    mountPath = "/app/uploads"
