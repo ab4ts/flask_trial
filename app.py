@@ -1,10 +1,13 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import os
-
+import logging
 app = Flask(__name__)
 
 # Set the upload folder to the mounted volume path
 UPLOAD_FOLDER = '/flask_trial/uploads'
+
+# Set up basic logging
+logging.basicConfig(level=logging.INFO)
 
 # Ensure the 'uploads' directory exists in the persistent storage path
 if not os.path.exists(UPLOAD_FOLDER):
@@ -41,8 +44,14 @@ def upload_image():
 
 # Route to serve uploaded files
 @app.route('/uploads/<filename>')
+@app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    try:
+        logging.info(f"Attempting to serve file: {filename}")
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    except Exception as e:
+        logging.error(f"Error while serving file {filename}: {str(e)}")
+        return jsonify({'error': 'File could not be served'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
