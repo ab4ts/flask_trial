@@ -13,8 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Create the uploads directory and set appropriate permissions
 RUN mkdir -p /app/uploads && chmod -R 775 /app/uploads
 
-RUN chmod -R 775 /app/uploads
-
 # Expose the port that Flask will run on
 EXPOSE 8080
 
@@ -24,4 +22,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=8080
 
 # Run the command to start the Flask app
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
