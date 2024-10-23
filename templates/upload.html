@@ -12,9 +12,33 @@
         <input type="submit" value="Upload">
     </form>
     <div id="response"></div>
+
+    <h2>Uploaded Files</h2>
+    <ul id="file-list"></ul>
     
     <script>
         const form = document.querySelector('form');
+        const fileList = document.getElementById('file-list');
+
+        // Function to fetch and display the list of uploaded files
+        async function fetchFileList() {
+            try {
+                const response = await fetch('/uploads');
+                const files = await response.json();
+                fileList.innerHTML = '';
+                files.forEach(file => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<a href="/uploads/${file}" target="_blank">${file}</a>`;
+                    fileList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching file list:', error);
+            }
+        }
+
+        // Fetch the file list on page load
+        window.onload = fetchFileList;
+
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(form);
@@ -27,8 +51,9 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    const fileUrl = `${result.file_path}`;
+                    const fileUrl = result.file_path;
                     document.getElementById('response').innerHTML = `<p>${result.message}</p><p><a href="${fileUrl}" target="_blank">View Uploaded File</a></p>`;
+                    fetchFileList();  // Refresh the file list after a successful upload
                 } else {
                     document.getElementById('response').innerHTML = `<p>Error: ${result.error}</p>`;
                 }

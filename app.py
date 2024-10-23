@@ -1,11 +1,11 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import os
 import logging
+
 app = Flask(__name__)
 
 # Set the upload folder to the mounted volume path
 UPLOAD_FOLDER = '/app/uploads'
-
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)
@@ -28,23 +28,27 @@ def upload_image():
     try:
         # Ensure a file is uploaded
         if 'file' not in request.files:
+            logging.error("No file part in the request")
             return jsonify({'error': 'No file part in the request'}), 400
 
         file = request.files['file']
         if file.filename == '':
+            logging.error("No selected file")
             return jsonify({'error': 'No selected file'}), 400
 
         # Save the uploaded file in the 'uploads' folder
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        logging.info(f"Saving file to {file_path}")
         file.save(file_path)
 
-        # Return a response with a file URL
-        return jsonify({'message': 'File uploaded successfully', 'file_path': f"/uploads/{file.filename}"}), 200
+        # Return a response with a full file URL
+        base_url = request.host_url
+        return jsonify({'message': 'File uploaded successfully', 'file_path': f"{base_url}uploads/{file.filename}"}), 200
     except Exception as e:
+        logging.error(f"Error during file upload: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # Route to serve uploaded files
-@app.route('/uploads/<filename>')
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     try:
