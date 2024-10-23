@@ -4,7 +4,8 @@ import logging
 app = Flask(__name__)
 
 # Set the upload folder to the mounted volume path
-UPLOAD_FOLDER = '/flask_trial/uploads'
+UPLOAD_FOLDER = '/app/uploads'
+
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)
