@@ -1,8 +1,0 @@
-[setup]
-pkgs = ["python3", "gcc", "libffi", "openssl"]
-
-[build]
-install_command = "pip install -r requirements.txt"
-
-[start]
-command = "python app.py"
