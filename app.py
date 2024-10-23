@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Set the upload folder to the mounted volume path
-UPLOAD_FOLDER = '/workspaces/flask_trial/uploads'
+UPLOAD_FOLDER = '/flask_trial/uploads'
 
 # Ensure the 'uploads' directory exists in the persistent storage path
 if not os.path.exists(UPLOAD_FOLDER):

@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Upload Image</title>
+    <title>Upload File</title>
 </head>
 <body>
-    <h1>Upload an Image</h1>
+    <h1>Upload a File</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="file" required>
         <input type="submit" value="Upload">
@@ -27,7 +27,8 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    document.getElementById('response').innerHTML = `<p>${result.message}</p><p><a href="${result.file_path}" target="_blank">View Uploaded File</a></p>`;
+                    const fileUrl = `${result.file_path}`;
+                    document.getElementById('response').innerHTML = `<p>${result.message}</p><p><a href="${fileUrl}" target="_blank">View Uploaded File</a></p>`;
                 } else {
                     document.getElementById('response').innerHTML = `<p>Error: ${result.error}</p>`;
                 }
