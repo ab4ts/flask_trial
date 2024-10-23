@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Create the uploads directory and set appropriate permissions
 RUN mkdir -p /app/uploads && chmod -R 775 /app/uploads
 
+RUN chmod -R 775 /app/uploads
+
 # Expose the port that Flask will run on
 EXPOSE 8080
 
