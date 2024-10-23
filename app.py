@@ -1,41 +1,58 @@
 import os
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-# Set up the app and the upload folder path
 app = Flask(__name__)
-UPLOAD_FOLDER = '/app/uploads'
+
+# Use the Railway-mounted volume path for uploads
+UPLOAD_FOLDER = '/mnt/volume/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Allow specific file extensions (optional)
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'txt', 'pdf'}
+# Ensure the uploads folder exists within the mounted volume
+if not os.path.exists(UPLOAD_FOLDER):
+    try:
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    except PermissionError as e:
+        print(f"Permission error: {e}")
+        UPLOAD_FOLDER = '/tmp/uploads'  # Fallback to a temporary directory if there's a permission issue
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
+# Route to render the file upload form
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return '''
+    <!doctype html>
+    <title>Upload File</title>
+    <h1>Upload a file</h1>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+      <input type="file" name="file" multiple>
+      <input type="submit" value="Upload">
+    </form>
+    '''
 
+# Route to handle file upload
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    # Check if a file was uploaded
     if 'file' not in request.files:
-        return 'No file part', 400
-    file = request.files['file']
+        return "No file part"
     
-    # If no file is selected
-    if file.filename == '':
-        return 'No selected file', 400
-
-    # Save the file if it's allowed
-    if file and allowed_file(file.filename):
+    files = request.files.getlist('file')
+    
+    if not files:
+        return "No selected file"
+    
+    for file in files:
+        if file.filename == '':
+            return "No selected file"
+        
+        # Save the file to the volume or temporary directory
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return f'File {filename} uploaded successfully!', 200
-    
-    return 'File type not allowed', 400
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+
+    return "Files successfully uploaded!"
 
 if __name__ == '__main__':
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the upload folder exists
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
