@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, send_from_directory
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -27,6 +27,7 @@ def index():
       <input type="file" name="file" multiple>
       <input type="submit" value="Upload">
     </form>
+    <h2><a href="/files">View Uploaded Files</a></h2>
     '''
 
 # Route to handle file upload
@@ -44,13 +45,29 @@ def upload_file():
         if file.filename == '':
             return "No selected file"
         
-        # Save the file to the volume or local folder
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
     return "Files successfully uploaded!"
 
+# Route to list uploaded files
+@app.route('/files')
+def list_files():
+    try:
+        files = os.listdir(app.config['UPLOAD_FOLDER'])
+        if not files:
+            return "No files uploaded yet."
+        file_list = '<br>'.join([f'<a href="/download/{file}">{file}</a>' for file in files])
+        return f"<h1>Uploaded Files</h1><br>{file_list}"
+    except FileNotFoundError:
+        return "Uploads directory not found."
+
+# Route to download a file
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     app.run(debug=True, host='0.0.0.0', port=port)
