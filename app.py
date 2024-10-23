@@ -54,5 +54,5 @@ def upload_file():
     return "Files successfully uploaded!"
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))  # Get the PORT from Railway environment
     app.run(debug=True, host='0.0.0.0', port=port)
