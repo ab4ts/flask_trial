@@ -1,0 +1,5 @@
+Flask
+opencv-python
+numpy
+torch
+yolov11  # Replace this with the actual YOLOv11 package name, if available
