@@ -1,5 +1,1 @@
-Flask==2.1.3
-opencv-python-headless==4.5.5.64
-torch==1.11.0
-yolov11  # Replace this with the actual YOLOv11 package name if available
-numpy==1.21.0
+Flask
