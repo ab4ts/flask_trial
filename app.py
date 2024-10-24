@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# Set upload folder based on environment
+# Dynamic upload folder based on environment
 if 'RAILWAY_ENVIRONMENT' in os.environ:
     UPLOAD_FOLDER = '/mnt/volume/uploads'
 else:
@@ -16,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Route to handle file upload and rendering
+# Route to render the main page
 @app.route('/')
 def index():
     files = os.listdir(app.config['UPLOAD_FOLDER'])
@@ -40,35 +40,6 @@ def index():
     <h2>Uploaded Files:</h2>
     <ul>{file_list}</ul>
     '''
-@app.route('/view/<filename>')
-def view_file(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file_extension = filename.split('.')[-1].lower()
-
-    # Handle text files
-    if file_extension in ['txt', 'html']:
-        with open(file_path, 'r') as f:
-            file_content = f.read()
-        return render_template_string(f'<h1>Viewing: {filename}</h1><pre>{file_content}</pre><br><a href="/">Back</a>')
-
-    # Handle images
-    elif file_extension in ['jpg', 'jpeg', 'png', 'gif']:
-        return f'<h1>Viewing: {filename}</h1><img src="/download/{filename}" style="max-width:800px"><br><a href="/">Back</a>'
-
-    # Handle video files
-    elif file_extension in ['mp4', 'webm', 'ogg']:
-        return f'''
-        <h1>Viewing: {filename}</h1>
-        <video width="640" controls>
-          <source src="/download/{filename}" type="video/{file_extension}">
-          Your browser does not support the video tag.
-        </video>
-        <br><a href="/">Back</a>
-        '''
-
-    # Other file types
-    else:
-        return f'<h1>Viewing not supported for {filename}</h1><br><a href="/">Back</a>'
 
 # Route to handle file uploads
 @app.route('/upload', methods=['POST'])
@@ -99,7 +70,7 @@ def delete_file(filename):
         os.remove(file_path)
     return redirect(url_for('index'))
 
-# Route to view a file
+# Route to view a file (including video)
 @app.route('/view/<filename>')
 def view_file(filename):
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -114,6 +85,17 @@ def view_file(filename):
     # Handle images
     elif file_extension in ['jpg', 'jpeg', 'png', 'gif']:
         return f'<h1>Viewing: {filename}</h1><img src="/download/{filename}" style="max-width:800px"><br><a href="/">Back</a>'
+
+    # Handle video files
+    elif file_extension in ['mp4', 'webm', 'ogg']:
+        return f'''
+        <h1>Viewing: {filename}</h1>
+        <video width="640" controls>
+          <source src="/download/{filename}" type="video/{file_extension}">
+          Your browser does not support the video tag.
+        </video>
+        <br><a href="/">Back</a>
+        '''
 
     # Other file types
     else:
