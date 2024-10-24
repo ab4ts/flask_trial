@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, send_from_directory, redirect, url_for, render_template_string
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
