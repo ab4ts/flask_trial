@@ -40,6 +40,35 @@ def index():
     <h2>Uploaded Files:</h2>
     <ul>{file_list}</ul>
     '''
+@app.route('/view/<filename>')
+def view_file(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file_extension = filename.split('.')[-1].lower()
+
+    # Handle text files
+    if file_extension in ['txt', 'html']:
+        with open(file_path, 'r') as f:
+            file_content = f.read()
+        return render_template_string(f'<h1>Viewing: {filename}</h1><pre>{file_content}</pre><br><a href="/">Back</a>')
+
+    # Handle images
+    elif file_extension in ['jpg', 'jpeg', 'png', 'gif']:
+        return f'<h1>Viewing: {filename}</h1><img src="/download/{filename}" style="max-width:800px"><br><a href="/">Back</a>'
+
+    # Handle video files
+    elif file_extension in ['mp4', 'webm', 'ogg']:
+        return f'''
+        <h1>Viewing: {filename}</h1>
+        <video width="640" controls>
+          <source src="/download/{filename}" type="video/{file_extension}">
+          Your browser does not support the video tag.
+        </video>
+        <br><a href="/">Back</a>
+        '''
+
+    # Other file types
+    else:
+        return f'<h1>Viewing not supported for {filename}</h1><br><a href="/">Back</a>'
 
 # Route to handle file uploads
 @app.route('/upload', methods=['POST'])
